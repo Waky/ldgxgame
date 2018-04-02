@@ -8,15 +8,15 @@ import com.badlogic.gdx.utils.Array;
 
 public class ParallaxBackground extends Actor {
 
-    private int scroll;
+    private float scroll;
     private Array<Texture> layers;
     private final int LAYER_SPEED_DIFFERENCE = 2;
 
-    float x,y,width,height,scaleX,scaleY;
-    int originX, originY, rotation, srcX, srcY;
-    boolean flipX,flipY;
+    private float x,y,width,height,scaleX,scaleY;
+    private int originX, originY, rotation, srcX, srcY;
+    private boolean flipX,flipY;
 
-    private int speed;
+    private float speed;
 
     public ParallaxBackground(Array<Texture> textures){
         layers = textures;
@@ -32,7 +32,7 @@ public class ParallaxBackground extends Actor {
         flipX = flipY = false;
     }
 
-    public void setSpeed(int newSpeed){
+    public void setSpeed(float newSpeed){
         this.speed = newSpeed;
     }
 
@@ -50,7 +50,7 @@ public class ParallaxBackground extends Actor {
 
         scroll+=speed;
         for (int i=0;i<layers.size;i++){
-            srcX = scroll + i*this.LAYER_SPEED_DIFFERENCE * scroll;
+            srcX = (int)(scroll + i*this.LAYER_SPEED_DIFFERENCE * scroll);
             batch.draw(layers.get(i),x,y,originX,originY, width,height,scaleX,scaleY,rotation,srcX,srcY,layers.get(i).getWidth(),layers.get(i).getHeight(),flipX,flipY);
         }
     }

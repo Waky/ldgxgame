@@ -25,7 +25,6 @@ public class TitleScreen implements Screen {
         Label title = new Label("Title Screen", MyGdxGame.gameSkin);
         title.setAlignment(Align.center);
         title.setY(Gdx.graphics.getHeight()/2*3);
-        //title.setX(Gdx.graphics.getWidth()/2-title.getWidth());
         title.setWidth(Gdx.graphics.getWidth());
         stage.addActor(title);
 
