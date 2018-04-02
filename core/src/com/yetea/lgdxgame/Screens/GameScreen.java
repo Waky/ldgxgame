@@ -3,6 +3,7 @@ package com.yetea.lgdxgame.Screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -20,12 +21,14 @@ public class GameScreen implements Screen {
 
     private Stage stage;
     private Game game;
+    private int numTouches;
 
 
     public GameScreen(Game aGame){
         game = aGame;
         stage = new Stage(new ScreenViewport());
 
+        numTouches = 0;
 
         Array<Texture> textures = new Array<Texture>();
         for (int i=1; i<=6;i++){
@@ -84,9 +87,31 @@ public class GameScreen implements Screen {
             }
         });
 
+        final Label numTouchesLabel = new Label("Score: "+numTouches,MyGdxGame.gameSkin);
+        numTouchesLabel.setAlignment(Align.right);
+        numTouchesLabel.setFontScale(3f);
+        numTouchesLabel.setX(Gdx.graphics.getWidth()-200f);
+        numTouchesLabel.setY(Gdx.graphics.getHeight()-50);
+        numTouchesLabel.setColor(Color.BLACK);
+
+        stage.addActor(numTouchesLabel);
+
         stage.addActor(backButton);
         stage.addActor(plusSpeedButton);
         stage.addActor(lessSpeedButton);
+
+        stage.addListener(new InputListener(){
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button){
+                numTouches++;
+                numTouchesLabel.setText("Score: "+numTouches);
+            }
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
+                return true;
+            }
+        });
     }
 
     @Override
