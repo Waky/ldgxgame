@@ -7,12 +7,11 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Align;
@@ -31,14 +30,11 @@ public class GameScreen implements Screen {
     private Stage UIstage;
     private Game game;
     private int score;
-    private float deltaForScore;
     private Label scoreLabel;
     private Player player;
 
     private final float PLAYER_X = 50f;
 
-    private float deltaForBarriers;
-    private Barrier testBarrier;
     private Barrier[] barriers;
 
     private Random mRandom;
@@ -51,10 +47,8 @@ public class GameScreen implements Screen {
         UIstage = new Stage(new ScreenViewport());
 
         score = 0;
-        deltaForScore = 0;
 
         barriers = new Barrier[5];
-        deltaForBarriers = 0;
 
         Array<Texture> textures = new Array<Texture>();
         for (int i=1; i<=6;i++){
@@ -98,7 +92,6 @@ public class GameScreen implements Screen {
         plusSpeedButton.addListener(new InputListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button){
-                //parallaxBackground.increaseSpeed();
                 for (Barrier barrier : barriers) barrier.incSpeed();
             }
             @Override
@@ -114,7 +107,6 @@ public class GameScreen implements Screen {
         lessSpeedButton.addListener(new InputListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button){
-                //parallaxBackground.decreaseSpeed();
                 for (Barrier barrier : barriers) barrier.decSpeed();
             }
             @Override
@@ -134,8 +126,6 @@ public class GameScreen implements Screen {
         player = new Player(airballoontex);
         player.setSize(150,225);
         player.setPosition(PLAYER_X,Gdx.graphics.getHeight()/2-player.getHeight());
-
-        //testBarrier = new Barrier(stage, 40);
 
         stage.addActor(scoreLabel);
         UIstage.addActor(backButton);
@@ -182,7 +172,6 @@ public class GameScreen implements Screen {
             score = 0;
             scoreLabel.setText("Score: "+score);
             player.addAction(Actions.moveTo(PLAYER_X, Gdx.graphics.getHeight()/2-player.getHeight(),0.8f));
-            deltaForScore = 0;
         } else if (player.getY() > Gdx.graphics.getHeight()){
             player.startFall();
         }
@@ -190,8 +179,9 @@ public class GameScreen implements Screen {
         for (int i=0;i<barriers.length;i++){
             barriers[i].update();
             if (barriers[i].collidesWith(player)){
-                score = 0;
-                scoreLabel.setText("Score: "+score);
+                //score = 0;
+                game.setScreen(new GameOverScreen(game,score));
+                //scoreLabel.setText("Score: "+score);
             }
             if (barriers[i].getX() < PLAYER_X){
                 if (!barriers[i].hasScored())
