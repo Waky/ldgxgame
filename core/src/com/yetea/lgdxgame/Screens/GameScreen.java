@@ -2,6 +2,7 @@ package com.yetea.lgdxgame.Screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -27,11 +28,14 @@ import java.util.Random;
 public class GameScreen implements Screen {
 
     private Stage stage;
+    private Stage UIstage;
     private Game game;
     private int score;
     private float deltaForScore;
     private Label scoreLabel;
     private Player player;
+
+    private final float PLAYER_X = 50f;
 
     private float deltaForBarriers;
     private Barrier testBarrier;
@@ -39,9 +43,12 @@ public class GameScreen implements Screen {
 
     private Random mRandom;
 
+    private InputMultiplexer multiplexer;
+
     public GameScreen(Game aGame){
         game = aGame;
         stage = new Stage(new ScreenViewport());
+        UIstage = new Stage(new ScreenViewport());
 
         score = 0;
         deltaForScore = 0;
@@ -91,7 +98,8 @@ public class GameScreen implements Screen {
         plusSpeedButton.addListener(new InputListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button){
-                parallaxBackground.increaseSpeed();
+                //parallaxBackground.increaseSpeed();
+                for (Barrier barrier : barriers) barrier.incSpeed();
             }
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
@@ -106,7 +114,8 @@ public class GameScreen implements Screen {
         lessSpeedButton.addListener(new InputListener(){
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button){
-                parallaxBackground.decreaseSpeed();
+                //parallaxBackground.decreaseSpeed();
+                for (Barrier barrier : barriers) barrier.decSpeed();
             }
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button){
@@ -124,14 +133,14 @@ public class GameScreen implements Screen {
         Texture airballoontex = new Texture(Gdx.files.internal("hot_air_balloon_andy.png"));
         player = new Player(airballoontex);
         player.setSize(150,225);
-        player.setPosition(50f,Gdx.graphics.getHeight()/2-player.getHeight());
+        player.setPosition(PLAYER_X,Gdx.graphics.getHeight()/2-player.getHeight());
 
         //testBarrier = new Barrier(stage, 40);
 
         stage.addActor(scoreLabel);
-        stage.addActor(backButton);
-        stage.addActor(plusSpeedButton);
-        stage.addActor(lessSpeedButton);
+        UIstage.addActor(backButton);
+        UIstage.addActor(plusSpeedButton);
+        UIstage.addActor(lessSpeedButton);
         stage.addActor(player);
 
         stage.addListener(new InputListener(){
@@ -146,12 +155,16 @@ public class GameScreen implements Screen {
                 return true;
             }
         });
+
+        multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(UIstage);
+        multiplexer.addProcessor(stage);
     }
 
     @Override
     public void show() {
         Gdx.app.log("GameScreen", "show");
-        Gdx.input.setInputProcessor(stage);
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     @Override
@@ -159,13 +172,16 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(0,0,0,0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stage.act();
+        UIstage.act();
+
         stage.draw();
+        UIstage.draw();
 
         if (player.getY() < (0-(player.getHeight()*player.getScaleY()))){
             //GAME OVER
             score = 0;
             scoreLabel.setText("Score: "+score);
-            player.addAction(Actions.moveTo(50f, Gdx.graphics.getHeight()/2-player.getHeight(),0.8f));
+            player.addAction(Actions.moveTo(PLAYER_X, Gdx.graphics.getHeight()/2-player.getHeight(),0.8f));
             deltaForScore = 0;
         } else if (player.getY() > Gdx.graphics.getHeight()){
             player.startFall();
@@ -173,15 +189,23 @@ public class GameScreen implements Screen {
 
         for (int i=0;i<barriers.length;i++){
             barriers[i].update();
-            if (barriers[i].getX() < 20f){
-                score++;
+            if (barriers[i].collidesWith(player)){
+                score = 0;
                 scoreLabel.setText("Score: "+score);
             }
-            if (barriers[i].getX() <= -30f){
+            if (barriers[i].getX() < PLAYER_X){
+                if (!barriers[i].hasScored())
+                    score++;
+                    scoreLabel.setText("Score: "+score);
+                    barriers[i].yesScore();
+            }
+            if (barriers[i].getX() <= -50f){
                 if (i == 0) {
                     barriers[i].setX(barriers[4].getX() + Gdx.graphics.getWidth() / 2);
+                    barriers[i].noScore();
                 } else {
                     barriers[i].setX(barriers[i - 1].getX() + Gdx.graphics.getWidth() / 2);
+                    barriers[i].noScore();
                 }
             }
         }
@@ -210,5 +234,6 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        UIstage.dispose();
     }
 }
